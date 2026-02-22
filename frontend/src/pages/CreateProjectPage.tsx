@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { createProject, clearError } from '../store/slices/projectSlice';
+import { addToast } from '../store/slices/uiSlice';
 import { Layout, Button, Card, CardBody, CardHeader, Input, TextArea, Alert } from '../components';
 
 interface CreateProjectForm {
@@ -23,9 +24,16 @@ export const CreateProjectPage: React.FC = () => {
   } = useForm<CreateProjectForm>();
 
   const onSubmit = async (data: CreateProjectForm) => {
-    const result = await dispatch(createProject(data));
-    if (createProject.fulfilled.match(result)) {
-      navigate('/dashboard');
+    try {
+      const result = await dispatch(createProject(data));
+      if (createProject.fulfilled.match(result)) {
+        dispatch(addToast({ message: 'Project created successfully', type: 'success' }));
+        navigate('/dashboard');
+      } else {
+        dispatch(addToast({ message: 'Failed to create project', type: 'error' }));
+      }
+    } catch (err) {
+      dispatch(addToast({ message: 'An unexpected error occurred', type: 'error' }));
     }
   };
 

@@ -4,7 +4,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { fetchProject, deleteProject } from '../store/slices/projectSlice';
 import { fetchTasks } from '../store/slices/taskSlice';
-import { Layout, Button, Card, CardBody, CardHeader, Loading, EmptyState, Pagination, Select, Alert } from '../components';
+import { addToast } from '../store/slices/uiSlice';
+import { Layout, Button, Card, CardBody, CardHeader, Loading, EmptyState, Pagination, Select, Alert, Modal } from '../components';
 import { TaskCard } from '../components/TaskCard';
 
 export const ProjectPage: React.FC = () => {
@@ -17,6 +18,8 @@ export const ProjectPage: React.FC = () => {
 
   const [statusFilter, setStatusFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (projectId) {
@@ -68,11 +71,21 @@ export const ProjectPage: React.FC = () => {
   ];
 
   const handleDeleteProject = async () => {
-    if (window.confirm('Are you sure you want to delete this project? All tasks and data will be permanently removed.')) {
-      if (projectId) {
-        await dispatch(deleteProject(projectId));
+    if (!projectId) return;
+    setIsDeleting(true);
+    try {
+      const result = await dispatch(deleteProject(projectId));
+      if (deleteProject.fulfilled.match(result)) {
+        dispatch(addToast({ message: 'Project deleted successfully', type: 'success' }));
         navigate('/dashboard');
+      } else {
+        dispatch(addToast({ message: 'Failed to delete project', type: 'error' }));
       }
+    } catch (err) {
+      dispatch(addToast({ message: 'An unexpected error occurred', type: 'error' }));
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteModalOpen(false);
     }
   };
 
@@ -101,7 +114,7 @@ export const ProjectPage: React.FC = () => {
             <p className="text-slate-400 text-lg max-w-2xl">{currentProject.description || 'No description provided for this project.'}</p>
           </div>
           <div className="flex gap-3 animate-in fade-in slide-in-from-right-4 duration-700">
-            <Button onClick={handleDeleteProject} variant="danger" className="py-2.5 px-6">
+            <Button onClick={() => setIsDeleteModalOpen(true)} variant="danger" className="py-2.5 px-6">
               Delete Project
             </Button>
             <Button onClick={handleCreateTask} variant="primary" className="py-2.5 px-6">
@@ -192,6 +205,19 @@ export const ProjectPage: React.FC = () => {
           )}
         </CardBody>
       </Card>
+
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Delete Project"
+        confirmLabel="Delete Project"
+        onConfirm={handleDeleteProject}
+        variant="danger"
+        isLoading={isDeleting}
+      >
+        Are you sure you want to delete <span className="text-white font-bold">{currentProject.name}</span>?
+        All associated tasks and data will be permanently removed. This action cannot be undone.
+      </Modal>
     </Layout>
   );
 };

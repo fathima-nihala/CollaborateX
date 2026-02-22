@@ -9,3 +9,5 @@ export { Header } from './Layout/Header';
 export { Layout } from './Layout/Layout';
 export { ProtectedRoute } from './ProtectedRoute';
 export { TaskCard } from './TaskCard';
+export { Modal } from './Modal';
+export { ToastContainer } from './Toast.tsx';

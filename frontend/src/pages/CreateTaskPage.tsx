@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { createTask, clearError } from '../store/slices/taskSlice';
+import { addToast } from '../store/slices/uiSlice';
 import { Layout, Button, Card, CardBody, CardHeader, Input, TextArea, Select, Alert } from '../components';
 
 interface CreateTaskForm {
@@ -33,18 +34,25 @@ export const CreateTaskPage: React.FC = () => {
   const onSubmit = async (data: CreateTaskForm) => {
     if (!projectId) return;
 
-    const result = await dispatch(
-      createTask({
-        projectId,
-        title: data.title,
-        description: data.description,
-        priority: data.priority,
-        dueDate: data.dueDate ? new Date(data.dueDate).toISOString() : undefined,
-      })
-    );
+    try {
+      const result = await dispatch(
+        createTask({
+          projectId,
+          title: data.title,
+          description: data.description,
+          priority: data.priority,
+          dueDate: data.dueDate ? new Date(data.dueDate).toISOString() : undefined,
+        })
+      );
 
-    if (createTask.fulfilled.match(result)) {
-      navigate(`/projects/${projectId}`);
+      if (createTask.fulfilled.match(result)) {
+        dispatch(addToast({ message: 'Task created successfully', type: 'success' }));
+        navigate(`/projects/${projectId}`);
+      } else {
+        dispatch(addToast({ message: 'Failed to create task', type: 'error' }));
+      }
+    } catch (err) {
+      dispatch(addToast({ message: 'An unexpected error occurred', type: 'error' }));
     }
   };
 

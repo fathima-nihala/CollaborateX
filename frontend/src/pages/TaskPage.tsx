@@ -1,10 +1,11 @@
 // src/pages/TaskPage.tsx
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { fetchTask, updateTask, deleteTask, clearError } from '../store/slices/taskSlice';
-import { Layout, Button, Card, CardBody, CardHeader, Input, TextArea, Select, Alert, Loading, EmptyState } from '../components';
+import { addToast } from '../store/slices/uiSlice';
+import { Layout, Button, Card, CardBody, CardHeader, Input, TextArea, Select, Alert, Loading, EmptyState, Modal } from '../components';
 
 interface TaskFormData {
   title: string;
@@ -20,6 +21,8 @@ export const TaskPage: React.FC = () => {
   const navigate = useNavigate();
 
   const { currentTask, isLoading, error } = useAppSelector((state) => state.tasks);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const {
     register,
@@ -49,29 +52,45 @@ export const TaskPage: React.FC = () => {
   const onSubmit = async (data: TaskFormData) => {
     if (!projectId || !taskId) return;
 
-    const result = await dispatch(
-      updateTask({
-        projectId,
-        taskId,
-        data: {
-          ...data,
-          dueDate: data.dueDate ? new Date(data.dueDate).toISOString() : undefined,
-        },
-      })
-    );
+    try {
+      const result = await dispatch(
+        updateTask({
+          projectId,
+          taskId,
+          data: {
+            ...data,
+            dueDate: data.dueDate ? new Date(data.dueDate).toISOString() : undefined,
+          },
+        })
+      );
 
-    if (updateTask.fulfilled.match(result)) {
-      navigate(`/projects/${projectId}`);
+      if (updateTask.fulfilled.match(result)) {
+        dispatch(addToast({ message: 'Task updated successfully', type: 'success' }));
+        navigate(`/projects/${projectId}`);
+      } else {
+        dispatch(addToast({ message: 'Failed to update task', type: 'error' }));
+      }
+    } catch (err) {
+      dispatch(addToast({ message: 'An unexpected error occurred', type: 'error' }));
     }
   };
 
   const handleDelete = async () => {
     if (!projectId || !taskId) return;
-    if (window.confirm('Are you sure you want to delete this task? This action cannot be undone.')) {
+    setIsDeleting(true);
+    try {
       const result = await dispatch(deleteTask({ projectId, taskId }));
       if (deleteTask.fulfilled.match(result)) {
+        dispatch(addToast({ message: 'Task deleted successfully', type: 'success' }));
         navigate(`/projects/${projectId}`);
+      } else {
+        dispatch(addToast({ message: 'Failed to delete task', type: 'error' }));
       }
+    } catch (err) {
+      dispatch(addToast({ message: 'An unexpected error occurred', type: 'error' }));
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteModalOpen(false);
     }
   };
 
@@ -99,7 +118,7 @@ export const TaskPage: React.FC = () => {
             <h1 className="text-4xl font-bold text-white tracking-tight">Manage Task</h1>
             <p className="text-slate-400 mt-2 text-lg">Modify attributes and track task lifecycle.</p>
           </div>
-          <Button onClick={handleDelete} variant="danger" className="py-2.5 px-6 sm:w-auto w-full">
+          <Button onClick={() => setIsDeleteModalOpen(true)} variant="danger" className="py-2.5 px-6 sm:w-auto w-full">
             Delete Task
           </Button>
         </div>
@@ -218,6 +237,17 @@ export const TaskPage: React.FC = () => {
           </div>
         </Card>
       </div>
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Delete Task"
+        confirmLabel="Delete Task"
+        onConfirm={handleDelete}
+        variant="danger"
+        isLoading={isDeleting}
+      >
+        Are you sure you want to delete this task? This action cannot be undone.
+      </Modal>
     </Layout>
   );
 };
