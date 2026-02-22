@@ -10,47 +10,60 @@ interface TaskCardProps {
 }
 
 export const TaskCard: React.FC<TaskCardProps> = ({ task, projectId }) => {
-  const statusColors = {
-    OPEN: 'bg-gray-100 text-gray-800',
-    IN_PROGRESS: 'bg-blue-100 text-blue-800',
-    IN_REVIEW: 'bg-yellow-100 text-yellow-800',
-    COMPLETED: 'bg-green-100 text-green-800',
-    ARCHIVED: 'bg-gray-200 text-gray-700',
+  const statusStyles = {
+    OPEN: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+    IN_PROGRESS: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+    IN_REVIEW: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+    COMPLETED: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+    ARCHIVED: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
   };
 
-  const priorityColors = {
-    LOW: 'text-blue-600',
-    MEDIUM: 'text-gray-600',
-    HIGH: 'text-orange-600',
-    CRITICAL: 'text-red-600',
+  const priorityStyles = {
+    LOW: 'text-indigo-400',
+    MEDIUM: 'text-blue-400',
+    HIGH: 'text-orange-400',
+    CRITICAL: 'text-red-400',
   };
 
   return (
     <Link to={`/projects/${projectId}/tasks/${task.id}`}>
-      <Card hoverable>
-        <CardBody>
-          <div className="flex justify-between items-start mb-2">
-            <h4 className="font-semibold text-gray-900 flex-1">{task.title}</h4>
-            <span className={`px-2 py-1 rounded text-xs font-semibold ${statusColors[task.status]}`}>
+      <Card hoverable className="transition-all duration-300 transform hover:-translate-y-1">
+        <CardBody className="p-5">
+          <div className="flex justify-between items-start mb-3 gap-4">
+            <h4 className="font-bold text-white text-lg tracking-tight flex-1 leading-tight">{task.title}</h4>
+            <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest border ${statusStyles[task.status]}`}>
               {task.status.replace(/_/g, ' ')}
             </span>
           </div>
 
-          <p className="text-gray-600 text-sm mb-3">{task.description}</p>
+          <p className="text-slate-400 text-sm mb-5 line-clamp-2 leading-relaxed">{task.description || 'No description provided'}</p>
 
-          <div className="flex items-center justify-between text-xs">
-            <div className="flex gap-3">
-              <span className={`font-semibold ${priorityColors[task.priority]}`}>
-                {task.priority}
-              </span>
-              {task.dueDate && (
-                <span className="text-gray-500">
-                  Due: {new Date(task.dueDate).toLocaleDateString()}
+          <div className="flex items-center justify-between pt-4 border-t border-white/[0.05]">
+            <div className="flex items-center gap-4">
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase font-bold text-slate-500 tracking-tighter mb-0.5">Priority</span>
+                <span className={`text-xs font-bold ${priorityStyles[task.priority]}`}>
+                  {task.priority}
                 </span>
+              </div>
+
+              {task.dueDate && (
+                <div className="flex flex-col border-l border-white/[0.08] pl-4">
+                  <span className="text-[10px] uppercase font-bold text-slate-500 tracking-tighter mb-0.5">Due Date</span>
+                  <span className="text-xs text-slate-300 font-medium">
+                    {new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </span>
+                </div>
               )}
             </div>
+
             {task.assignedTo && (
-              <span className="text-gray-500">@{task.assignedTo.username}</span>
+              <div className="flex items-center gap-2 bg-white/[0.05] py-1 px-2.5 rounded-full border border-white/[0.08]">
+                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary-500 to-indigo-600 flex items-center justify-center text-[10px] font-bold text-white">
+                  {task.assignedTo.username[0].toUpperCase()}
+                </div>
+                <span className="text-[10px] text-slate-300 font-bold tracking-tight">@{task.assignedTo.username}</span>
+              </div>
             )}
           </div>
         </CardBody>

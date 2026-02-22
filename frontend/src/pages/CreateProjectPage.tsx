@@ -31,58 +31,60 @@ export const CreateProjectPage: React.FC = () => {
 
   return (
     <Layout>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Create New Project</h1>
-        <p className="text-gray-600 mt-1">Start a new project and invite your team</p>
+      <div className="max-w-2xl mx-auto">
+        <div className="mb-10 animate-in fade-in slide-in-from-top-4 duration-700">
+          <h1 className="text-4xl font-bold text-white tracking-tight">Create New Project</h1>
+          <p className="text-slate-400 mt-2 text-lg">Initialize a new workspace and start delegating tasks today.</p>
+        </div>
+
+        <Card className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100">
+          <CardHeader className="p-6 border-b border-white/[0.05]">
+            <h2 className="text-xl font-bold text-white tracking-tight">Project Configuration</h2>
+          </CardHeader>
+
+          <CardBody className="p-6">
+            {error && (
+              <Alert
+                type="error"
+                message={error}
+                onClose={() => dispatch(clearError())}
+                className="mb-8"
+              />
+            )}
+
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <Input
+                label="Project Name"
+                placeholder="e.g., Marketing Campaign 2026"
+                register={register('name', { required: 'Name is required' })}
+                error={errors.name}
+              />
+
+              <TextArea
+                label="Project Description"
+                placeholder="Provide a high-level overview of the project objectives..."
+                rows={5}
+                register={register('description')}
+                error={errors.description}
+              />
+
+              <div className="flex items-center gap-4 pt-4 border-t border-white/[0.08]">
+                <Button type="submit" variant="primary" loading={isLoading} className="flex-1 sm:flex-none py-3 px-8">
+                  Create Project
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => navigate('/dashboard')}
+                  className="flex-1 sm:flex-none py-3 px-8"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </CardBody>
+        </Card>
       </div>
-
-      <Card className="max-w-2xl">
-        <CardHeader>
-          <h2 className="text-xl font-semibold text-gray-900">Project Details</h2>
-        </CardHeader>
-
-        <CardBody>
-          {error && (
-            <Alert
-              type="error"
-              message={error}
-              onClose={() => dispatch(clearError())}
-              className="mb-4"
-            />
-          )}
-
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <Input
-              label="Project Name"
-              placeholder="My Awesome Project"
-              register={register('name', { required: 'Name is required' })}
-              error={errors.name}
-            />
-
-            <TextArea
-              label="Description"
-              placeholder="What is this project about?"
-              rows={4}
-              register={register('description')}
-              error={errors.description}
-            />
-
-            <div className="flex gap-4">
-              <Button type="submit" variant="primary" size="md" loading={isLoading}>
-                Create Project
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                size="md"
-                onClick={() => navigate('/dashboard')}
-              >
-                Cancel
-              </Button>
-            </div>
-          </form>
-        </CardBody>
-      </Card>
     </Layout>
   );
 };

@@ -9,7 +9,7 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 export const Card: React.FC<CardProps> = ({ children, hoverable = false, className = '', ...props }) => {
   return (
     <div
-      className={`bg-white rounded-lg shadow ${hoverable ? 'hover:shadow-lg transition-shadow' : ''} ${className}`}
+      className={`glass-card ${hoverable ? 'hover:bg-white/[0.05] transition-all duration-300' : ''} ${className}`}
       {...props}
     >
       {children}
@@ -23,7 +23,7 @@ interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export const CardHeader: React.FC<CardHeaderProps> = ({ children, className = '', ...props }) => {
   return (
-    <div className={`border-b border-gray-200 p-4 ${className}`} {...props}>
+    <div className={`border-b border-white/[0.08] p-6 ${className}`} {...props}>
       {children}
     </div>
   );
@@ -35,7 +35,7 @@ interface CardBodyProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export const CardBody: React.FC<CardBodyProps> = ({ children, className = '', ...props }) => {
   return (
-    <div className={`p-4 ${className}`} {...props}>
+    <div className={`p-6 ${className}`} {...props}>
       {children}
     </div>
   );
@@ -47,7 +47,7 @@ interface CardFooterProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export const CardFooter: React.FC<CardFooterProps> = ({ children, className = '', ...props }) => {
   return (
-    <div className={`border-t border-gray-200 p-4 bg-gray-50 ${className}`} {...props}>
+    <div className={`border-t border-white/[0.08] p-6 bg-white/[0.02] rounded-b-2xl ${className}`} {...props}>
       {children}
     </div>
   );

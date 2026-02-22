@@ -2,9 +2,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
-import { fetchProject } from '../store/slices/projectSlice';
+import { fetchProject, deleteProject } from '../store/slices/projectSlice';
 import { fetchTasks } from '../store/slices/taskSlice';
-import { Layout, Button, Card, CardBody, CardHeader, Loading, EmptyState, Pagination, Select,Alert } from '../components';
+import { Layout, Button, Card, CardBody, CardHeader, Loading, EmptyState, Pagination, Select, Alert } from '../components';
 import { TaskCard } from '../components/TaskCard';
 
 export const ProjectPage: React.FC = () => {
@@ -67,10 +67,19 @@ export const ProjectPage: React.FC = () => {
     { value: 'CRITICAL', label: 'Critical' },
   ];
 
+  const handleDeleteProject = async () => {
+    if (window.confirm('Are you sure you want to delete this project? All tasks and data will be permanently removed.')) {
+      if (projectId) {
+        await dispatch(deleteProject(projectId));
+        navigate('/dashboard');
+      }
+    }
+  };
+
   if (projectLoading) {
     return (
       <Layout>
-        <Loading message="Loading project..." />
+        <Loading message="Loading project details..." />
       </Layout>
     );
   }
@@ -78,88 +87,106 @@ export const ProjectPage: React.FC = () => {
   if (!currentProject) {
     return (
       <Layout>
-        <EmptyState title="Project not found" />
+        <EmptyState title="Project not found" description="The project you are looking for might have been deleted or moved." />
       </Layout>
     );
   }
 
   return (
     <Layout>
-      <div className="mb-8">
-        <div className="flex justify-between items-start mb-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">{currentProject.name}</h1>
-            <p className="text-gray-600 mt-1">{currentProject.description || 'No description'}</p>
+      <div className="mb-10">
+        <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-8">
+          <div className="animate-in fade-in slide-in-from-left-4 duration-700">
+            <h1 className="text-4xl font-bold text-white tracking-tight mb-2">{currentProject.name}</h1>
+            <p className="text-slate-400 text-lg max-w-2xl">{currentProject.description || 'No description provided for this project.'}</p>
           </div>
-          <Button onClick={handleCreateTask} variant="primary" size="lg">
-            + New Task
-          </Button>
+          <div className="flex gap-3 animate-in fade-in slide-in-from-right-4 duration-700">
+            <Button onClick={handleDeleteProject} variant="danger" className="py-2.5 px-6">
+              Delete Project
+            </Button>
+            <Button onClick={handleCreateTask} variant="primary" className="py-2.5 px-6">
+              + New Task
+            </Button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
           <Card>
-            <CardBody>
-              <p className="text-gray-600 text-sm">Members</p>
-              <p className="text-2xl font-bold text-gray-900">{currentProject.members?.length || 0}</p>
+            <CardBody className="p-6">
+              <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-2">Members</p>
+              <p className="text-3xl font-bold text-white">{currentProject.members?.length || 0}</p>
             </CardBody>
           </Card>
           <Card>
-            <CardBody>
-              <p className="text-gray-600 text-sm">Total Tasks</p>
-              <p className="text-2xl font-bold text-gray-900">{tasks.length}</p>
+            <CardBody className="p-6">
+              <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-2">Total Tasks</p>
+              <p className="text-3xl font-bold text-white">{tasks.length}</p>
+            </CardBody>
+          </Card>
+          <Card>
+            <CardBody className="p-6">
+              <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-2">Status</p>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
+                <p className="text-lg font-semibold text-slate-200 uppercase">{currentProject.status}</p>
+              </div>
             </CardBody>
           </Card>
         </div>
       </div>
 
-      <Card className="mb-6">
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold text-gray-900">Tasks</h2>
-            <div className="flex gap-3">
+      <Card className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
+        <CardHeader className="px-6 py-5">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <h2 className="text-xl font-bold text-white">Project Tasks</h2>
+            <div className="flex gap-3 w-full sm:w-auto">
               <Select
                 options={statusOptions}
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
+                className="mb-0 flex-1"
               />
               <Select
                 options={priorityOptions}
                 value={priorityFilter}
                 onChange={(e) => setPriorityFilter(e.target.value)}
+                className="mb-0 flex-1"
               />
             </div>
           </div>
         </CardHeader>
 
-        <CardBody>
-          {error && <Alert type="error" message={error} />}
+        <CardBody className="p-6">
+          {error && <Alert type="error" message={error} className="mb-6" />}
 
           {tasksLoading && tasks.length === 0 ? (
-            <Loading message="Loading tasks..." />
+            <Loading message="Fetching tasks..." />
           ) : tasks.length === 0 ? (
             <EmptyState
-              title="No tasks yet"
-              description="Create your first task to get started"
+              title="No tasks identified"
+              description="Get started by creating your first task for this project."
               action={
                 <Button onClick={handleCreateTask} variant="primary">
-                  New Task
+                  Create First Task
                 </Button>
               }
             />
           ) : (
             <>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {tasks.map((task) => (
                   <TaskCard key={task.id} task={task} projectId={projectId!} />
                 ))}
               </div>
 
               {pagination.pages > 1 && (
-                <Pagination
-                  page={pagination.page}
-                  pages={pagination.pages}
-                  onPageChange={handlePageChange}
-                />
+                <div className="mt-8 pt-8 border-t border-white/[0.08]">
+                  <Pagination
+                    page={pagination.page}
+                    pages={pagination.pages}
+                    onPageChange={handlePageChange}
+                  />
+                </div>
               )}
             </>
           )}
