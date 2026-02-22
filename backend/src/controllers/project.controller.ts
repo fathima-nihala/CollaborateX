@@ -1,8 +1,7 @@
-// src/controllers/project.controller.ts
 import { Request, Response } from 'express';
 import projectService from '../services/project.service';
-import type { CreateProjectInput, UpdateProjectInput, PaginationParams } from '../schemas/validation';
-import { AddProjectMemberSchema } from '../schemas/validation';
+import type { CreateProjectInput, UpdateProjectInput } from '../schemas/validation';
+import { AddProjectMemberSchema, PaginationSchema } from '../schemas/validation';
 import type { ApiResponse } from '../types';
 
 export const createProject = async (req: Request, res: Response) => {
@@ -47,7 +46,8 @@ export const getUserProjects = async (req: Request, res: Response) => {
     return;
   }
 
-  const pagination = req.query as unknown as PaginationParams;
+  // Parse and coerce query string values to proper types (page/limit: string → number)
+  const pagination = PaginationSchema.parse(req.query);
   const result = await projectService.getProjectsByUser(req.user.id, pagination);
 
   const response: ApiResponse = {

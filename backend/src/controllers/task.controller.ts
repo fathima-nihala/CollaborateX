@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import taskService from '../services/task.service';
-import type { CreateTaskInput, UpdateTaskInput, PaginationParams } from '../schemas/validation';
+import type { CreateTaskInput, UpdateTaskInput } from '../schemas/validation';
+import { PaginationSchema } from '../schemas/validation';
 import type { ApiResponse } from '../types';
 
 export const createTask = async (req: Request, res: Response) => {
@@ -47,7 +48,8 @@ export const getProjectTasks = async (req: Request, res: Response) => {
   }
 
   const { projectId } = req.params;
-  const pagination = req.query as unknown as PaginationParams;
+  // Parse and coerce page/limit from query strings to numbers
+  const pagination = PaginationSchema.parse(req.query);
 
   const filters = {
     status: (req.query.status as any) || undefined,

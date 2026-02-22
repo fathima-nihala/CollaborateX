@@ -1,4 +1,3 @@
-// src/store/slices/taskSlice.ts
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 import type { AxiosError } from 'axios';
 import type { TasksState, Task } from '../../types';
