@@ -1,0 +1,9 @@
+.env.production
+DATABASE_URL
+JWT_SECRET
+JWT_REFRESH_SECRET
+node_modules
+dist
+logs
+.git
+.gitignore

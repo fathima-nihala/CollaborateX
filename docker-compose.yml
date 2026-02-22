@@ -1,0 +1,87 @@
+version: '3.9'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: collaboratex_postgres
+    environment:
+      POSTGRES_USER: collaboratex_user
+      POSTGRES_PASSWORD: collaboratex_password_change_me
+      POSTGRES_DB: collaboratex_db
+      POSTGRES_INITDB_ARGS: "-E UTF8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U collaboratex_user -d collaboratex_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - collaboratex_network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: collaboratex_backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      DATABASE_URL: postgresql://collaboratex_user:collaboratex_password_change_me@postgres:5432/collaboratex_db
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-your-refresh-secret-key-change-in-production}
+      JWT_EXPIRY: 15m
+      JWT_REFRESH_EXPIRY: 7d
+      BCRYPT_ROUNDS: 10
+      CORS_ORIGIN: http://localhost:5173,http://frontend:5173
+      LOG_LEVEL: info
+      RATE_LIMIT_WINDOW_MS: 900000
+      RATE_LIMIT_MAX_REQUESTS: 100
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend/logs:/app/logs
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 15s
+    networks:
+      - collaboratex_network
+
+  # Frontend Application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: collaboratex_frontend
+    depends_on:
+      - backend
+    environment:
+      VITE_API_URL: http://backend:5000/api
+    ports:
+      - "5173:5173"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:5173"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 15s
+    networks:
+      - collaboratex_network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  collaboratex_network:
+    driver: bridge
