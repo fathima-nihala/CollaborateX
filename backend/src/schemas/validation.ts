@@ -1,6 +1,6 @@
 // src/schemas/validation.ts
 import { z } from 'zod';
-import { UserRole, TaskStatus, TaskPriority } from '../types';
+import { UserRole, TaskStatus, TaskPriority, ProjectStatus } from '../types';
 
 // Auth Schemas
 export const RegisterSchema = z.object({
@@ -29,7 +29,11 @@ export const CreateProjectSchema = z.object({
 export const UpdateProjectSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   description: z.string().max(500).optional(),
-  status: z.enum(['active', 'inactive']).optional(),
+  status: z
+    .string()
+    .transform((val) => val.toUpperCase())
+    .pipe(z.nativeEnum(ProjectStatus))
+    .optional(),
 });
 
 export const AddProjectMemberSchema = z.object({
@@ -57,8 +61,8 @@ export const UpdateTaskSchema = z.object({
 
 // Pagination Schema
 export const PaginationSchema = z.object({
-  page: z.string().regex(/^\d+$/).transform(Number).default('1'),
-  limit: z.string().regex(/^\d+$/).transform(Number).default('10'),
+  page: z.string().regex(/^\d+$/).transform(Number).pipe(z.number()).default(1),
+  limit: z.string().regex(/^\d+$/).transform(Number).pipe(z.number()).default(10),
   sortBy: z.string().optional(),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 });
