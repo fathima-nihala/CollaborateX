@@ -36,3 +36,6 @@
 {"level":"info","message":"User logged out successfully","service":"collaboratex-backend","timestamp":"2026-02-22 14:04:08","userId":"cmlxhjsvn0000rab8qlw94xa9"}
 {"level":"info","message":"User logged out","service":"collaboratex-backend","timestamp":"2026-02-22 14:04:08","userId":"cmlxhjsvn0000rab8qlw94xa9"}
 {"level":"info","message":"POST /api/auth/logout 200 52 - 1763.213 ms","service":"collaboratex-backend","timestamp":"2026-02-22 14:04:08"}
+{"environment":"development","level":"info","message":"Server running on port 5000","service":"collaboratex-backend","timestamp":"2026-02-22 14:04:13"}
+{"environment":"development","level":"info","message":"Server running on port 5000","service":"collaboratex-backend","timestamp":"2026-02-22 14:05:09"}
+{"environment":"development","level":"info","message":"Server running on port 5000","service":"collaboratex-backend","timestamp":"2026-02-22 14:05:37"}

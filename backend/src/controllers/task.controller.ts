@@ -1,4 +1,3 @@
-// src/controllers/task.controller.ts
 import { Request, Response } from 'express';
 import taskService from '../services/task.service';
 import type { CreateTaskInput, UpdateTaskInput, PaginationParams } from '../schemas/validation';
