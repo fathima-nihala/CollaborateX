@@ -1,4 +1,3 @@
-// src/store/slices/projectSlice.ts
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 import type { AxiosError } from 'axios';
 import type { ProjectsState, Project } from '../../types';
@@ -98,6 +97,21 @@ export const deleteProject = createAsyncThunk(
   }
 );
 
+export const addProjectMember = createAsyncThunk(
+  'projects/addMember',
+  async (
+    { projectId, userId, role }: { projectId: string; userId: string; role?: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await apiClient.addProjectMember(projectId, userId, role);
+      return response.data.data;
+    } catch (error: unknown) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  }
+);
+
 const projectSlice = createSlice({
   name: 'projects',
   initialState,
@@ -191,6 +205,24 @@ const projectSlice = createSlice({
         }
       })
       .addCase(deleteProject.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      });
+
+    // Add Member
+    builder
+      .addCase(addProjectMember.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(addProjectMember.fulfilled, (state, action) => {
+        state.isLoading = false;
+        if (state.currentProject && state.currentProject.id === action.meta.arg.projectId) {
+          if (!state.currentProject.members) state.currentProject.members = [];
+          state.currentProject.members.push(action.payload);
+        }
+      })
+      .addCase(addProjectMember.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       });

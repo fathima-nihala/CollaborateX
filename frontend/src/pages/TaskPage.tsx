@@ -1,9 +1,9 @@
-// src/pages/TaskPage.tsx
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { fetchTask, updateTask, deleteTask, clearError } from '../store/slices/taskSlice';
+import { fetchProject } from '../store/slices/projectSlice';
 import { addToast } from '../store/slices/uiSlice';
 import { Layout, Button, Card, CardBody, CardHeader, Input, TextArea, Select, Alert, Loading, EmptyState, Modal } from '../components';
 
@@ -13,6 +13,7 @@ interface TaskFormData {
   status: string;
   priority: string;
   dueDate: string;
+  assignedToId?: string;
 }
 
 export const TaskPage: React.FC = () => {
@@ -20,9 +21,13 @@ export const TaskPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
+  const { user } = useAppSelector((state) => state.auth);
   const { currentTask, isLoading, error } = useAppSelector((state) => state.tasks);
+  const { currentProject } = useAppSelector((state) => state.projects);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const isAdmin = currentProject?.members.find((m: any) => m.userId === user?.id)?.role === 'ADMIN';
 
   const {
     register,
@@ -38,12 +43,19 @@ export const TaskPage: React.FC = () => {
   }, [dispatch, projectId, taskId]);
 
   useEffect(() => {
+    if (projectId && (!currentProject || currentProject.id !== projectId)) {
+      dispatch(fetchProject(projectId));
+    }
+  }, [dispatch, projectId, currentProject]);
+
+  useEffect(() => {
     if (currentTask) {
       reset({
         title: currentTask.title,
         description: currentTask.description,
         status: currentTask.status,
         priority: currentTask.priority,
+        assignedToId: currentTask.assignedToId || '',
         dueDate: currentTask.dueDate ? new Date(currentTask.dueDate).toISOString().slice(0, 16) : '',
       });
     }
@@ -59,6 +71,7 @@ export const TaskPage: React.FC = () => {
           taskId,
           data: {
             ...data,
+            assignedToId: data.assignedToId || null,
             dueDate: data.dueDate ? new Date(data.dueDate).toISOString() : undefined,
           },
         })
@@ -74,6 +87,14 @@ export const TaskPage: React.FC = () => {
       dispatch(addToast({ message: 'An unexpected error occurred', type: 'error' }));
     }
   };
+
+  const memberOptions = [
+    { value: '', label: 'Unassigned' },
+    ...(currentProject?.members?.map((m: any) => ({
+      value: m.user.id,
+      label: `@${m.user.username}`,
+    })) || []),
+  ];
 
   const handleDelete = async () => {
     if (!projectId || !taskId) return;
@@ -118,9 +139,11 @@ export const TaskPage: React.FC = () => {
             <h1 className="text-4xl font-bold text-white tracking-tight">Manage Task</h1>
             <p className="text-slate-400 mt-2 text-lg">Modify attributes and track task lifecycle.</p>
           </div>
-          <Button onClick={() => setIsDeleteModalOpen(true)} variant="danger" className="py-2.5 px-6 sm:w-auto w-full">
-            Delete Task
-          </Button>
+          {isAdmin && (
+            <Button onClick={() => setIsDeleteModalOpen(true)} variant="danger" className="py-2.5 px-6 sm:w-auto w-full">
+              Delete Task
+            </Button>
+          )}
         </div>
 
         <Card className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100 mb-10">
@@ -145,6 +168,7 @@ export const TaskPage: React.FC = () => {
                 label="Task Title"
                 register={register('title', { required: 'Title is required' })}
                 error={errors.title}
+                disabled={!isAdmin}
               />
 
               <TextArea
@@ -152,6 +176,7 @@ export const TaskPage: React.FC = () => {
                 rows={5}
                 register={register('description')}
                 error={errors.description}
+                disabled={!isAdmin}
               />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -178,6 +203,15 @@ export const TaskPage: React.FC = () => {
                   ]}
                   register={register('priority')}
                   error={errors.priority}
+                  disabled={!isAdmin}
+                />
+
+                <Select
+                  label="Assign To"
+                  options={memberOptions}
+                  register={register('assignedToId')}
+                  error={errors.assignedToId}
+                  disabled={!isAdmin}
                 />
 
                 <Input
@@ -185,6 +219,7 @@ export const TaskPage: React.FC = () => {
                   type="datetime-local"
                   register={register('dueDate')}
                   error={errors.dueDate}
+                  disabled={!isAdmin}
                 />
               </div>
 

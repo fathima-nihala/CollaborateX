@@ -1,4 +1,3 @@
-// src/components/index.ts
 export { Button } from './Button';
 export { Card, CardHeader, CardBody, CardFooter } from './Card';
 export { Input, TextArea, Select, FileInput } from './Form';

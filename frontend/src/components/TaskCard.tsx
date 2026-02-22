@@ -1,4 +1,3 @@
-// src/components/TaskCard.tsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 import type { Task } from '../types';

@@ -1,9 +1,9 @@
-// src/pages/CreateTaskPage.tsx
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { createTask, clearError } from '../store/slices/taskSlice';
+import { fetchProject } from '../store/slices/projectSlice';
 import { addToast } from '../store/slices/uiSlice';
 import { Layout, Button, Card, CardBody, CardHeader, Input, TextArea, Select, Alert } from '../components';
 
@@ -12,6 +12,7 @@ interface CreateTaskForm {
   description: string;
   priority: string;
   dueDate: string;
+  assignedToId?: string;
 }
 
 export const CreateTaskPage: React.FC = () => {
@@ -19,7 +20,24 @@ export const CreateTaskPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
+  const { user } = useAppSelector((state) => state.auth);
   const { isLoading, error } = useAppSelector((state) => state.tasks);
+  const { currentProject } = useAppSelector((state) => state.projects);
+
+  const isAdmin = currentProject?.members.find((m: any) => m.userId === user?.id)?.role === 'ADMIN';
+
+  useEffect(() => {
+    if (projectId && (!currentProject || currentProject.id !== projectId)) {
+      dispatch(fetchProject(projectId));
+    }
+  }, [dispatch, projectId, currentProject]);
+
+  useEffect(() => {
+    if (currentProject && !isAdmin) {
+      dispatch(addToast({ message: 'Only admins can create tasks', type: 'error' }));
+      navigate(`/projects/${projectId}`);
+    }
+  }, [currentProject, isAdmin, navigate, projectId, dispatch]);
 
   const {
     register,
@@ -41,6 +59,7 @@ export const CreateTaskPage: React.FC = () => {
           title: data.title,
           description: data.description,
           priority: data.priority,
+          assignedToId: data.assignedToId || undefined,
           dueDate: data.dueDate ? new Date(data.dueDate).toISOString() : undefined,
         })
       );
@@ -55,6 +74,14 @@ export const CreateTaskPage: React.FC = () => {
       dispatch(addToast({ message: 'An unexpected error occurred', type: 'error' }));
     }
   };
+
+  const memberOptions = [
+    { value: '', label: 'Unassigned' },
+    ...(currentProject?.members?.map((m: any) => ({
+      value: m.user.id,
+      label: `@${m.user.username}`,
+    })) || []),
+  ];
 
   return (
     <Layout>
@@ -105,6 +132,13 @@ export const CreateTaskPage: React.FC = () => {
               />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <Select
+                  label="Assign To"
+                  options={memberOptions}
+                  register={register('assignedToId')}
+                  error={errors.assignedToId}
+                />
+
                 <Select
                   label="Priority"
                   options={[

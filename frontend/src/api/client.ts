@@ -1,4 +1,3 @@
-// src/api/client.ts
 import axios from 'axios';
 import type { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from 'axios';
 
@@ -166,6 +165,13 @@ class ApiClient {
 
   deleteTask(projectId: string, taskId: string) {
     return this.instance.delete(`/projects/${projectId}/tasks/${taskId}`);
+  }
+
+  // User endpoints
+  searchUsers(query: string) {
+    return this.instance.get('/users/search', {
+      params: { query },
+    });
   }
 }
 

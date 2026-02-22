@@ -1,10 +1,10 @@
-// src/pages/ProjectPage.tsx
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
-import { fetchProject, deleteProject } from '../store/slices/projectSlice';
+import { fetchProject, deleteProject, addProjectMember } from '../store/slices/projectSlice';
 import { fetchTasks } from '../store/slices/taskSlice';
 import { addToast } from '../store/slices/uiSlice';
+import { searchUsers } from '../store/slices/authSlice';
 import { Layout, Button, Card, CardBody, CardHeader, Loading, EmptyState, Pagination, Select, Alert, Modal } from '../components';
 import { TaskCard } from '../components/TaskCard';
 
@@ -13,13 +13,24 @@ export const ProjectPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
+  const { user } = useAppSelector((state) => state.auth);
   const { currentProject, isLoading: projectLoading } = useAppSelector((state) => state.projects);
   const { tasks, isLoading: tasksLoading, pagination, error } = useAppSelector((state) => state.tasks);
+
+  const isAdmin = currentProject?.members.find((m: any) => m.userId === user?.id)?.role === 'ADMIN';
 
   const [statusFilter, setStatusFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Member search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [selectedRole, setSelectedRole] = useState('USER');
 
   useEffect(() => {
     if (projectId) {
@@ -89,6 +100,44 @@ export const ProjectPage: React.FC = () => {
     }
   };
 
+  const handleSearchUsers = async () => {
+    if (!searchQuery.trim()) return;
+    setIsSearching(true);
+    setHasSearched(false);
+    try {
+      const result = await dispatch(searchUsers(searchQuery));
+      if (searchUsers.fulfilled.match(result)) {
+        setSearchResults(result.payload);
+        setHasSearched(true);
+      }
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleAddMember = async (userId: string) => {
+    if (!projectId) return;
+    try {
+      const result = await dispatch(addProjectMember({ projectId, userId, role: selectedRole }));
+      if (addProjectMember.fulfilled.match(result)) {
+        dispatch(addToast({ message: 'Member added successfully', type: 'success' }));
+        setSearchQuery('');
+        setSearchResults([]);
+      } else {
+        dispatch(addToast({ message: 'Failed to add member', type: 'error' }));
+      }
+    } catch (err) {
+      dispatch(addToast({ message: 'An unexpected error occurred', type: 'error' }));
+    }
+  };
+
+  const handleCloseMembersModal = () => {
+    setIsMembersModalOpen(false);
+    setSearchQuery('');
+    setSearchResults([]);
+    setHasSearched(false);
+  };
+
   if (projectLoading) {
     return (
       <Layout>
@@ -114,12 +163,19 @@ export const ProjectPage: React.FC = () => {
             <p className="text-slate-400 text-lg max-w-2xl">{currentProject.description || 'No description provided for this project.'}</p>
           </div>
           <div className="flex gap-3 animate-in fade-in slide-in-from-right-4 duration-700">
-            <Button onClick={() => setIsDeleteModalOpen(true)} variant="danger" className="py-2.5 px-6">
-              Delete Project
-            </Button>
-            <Button onClick={handleCreateTask} variant="primary" className="py-2.5 px-6">
-              + New Task
-            </Button>
+            {isAdmin && (
+              <>
+                <Button onClick={() => setIsMembersModalOpen(true)} variant="secondary" className="py-2.5 px-6">
+                  Manage Members
+                </Button>
+                <Button onClick={() => setIsDeleteModalOpen(true)} variant="danger" className="py-2.5 px-6">
+                  Delete Project
+                </Button>
+                <Button onClick={handleCreateTask} variant="primary" className="py-2.5 px-6">
+                  + New Task
+                </Button>
+              </>
+            )}
           </div>
         </div>
 
@@ -206,6 +262,7 @@ export const ProjectPage: React.FC = () => {
         </CardBody>
       </Card>
 
+      {/* Delete Project Modal */}
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
@@ -217,6 +274,100 @@ export const ProjectPage: React.FC = () => {
       >
         Are you sure you want to delete <span className="text-white font-bold">{currentProject.name}</span>?
         All associated tasks and data will be permanently removed. This action cannot be undone.
+      </Modal>
+
+      {/* Manage Members Modal */}
+      <Modal
+        isOpen={isMembersModalOpen}
+        onClose={handleCloseMembersModal}
+        title="Manage Project Members"
+        cancelLabel="Close"
+      >
+        <div className="space-y-6">
+          {/* Current Members */}
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Current Members</h4>
+            <div className="space-y-2">
+              {currentProject.members?.map((member: any) => (
+                <div key={member.id} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-white uppercase">
+                      {member.user.username[0]}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-white">{member.user.username}</p>
+                      <p className="text-[10px] text-slate-500">{member.role}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="h-px bg-white/[0.05]" />
+
+          {/* Add New Member */}
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Add New Member</h4>
+            <div className="flex gap-2 mb-4">
+              <div className="flex-1">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search by username or email..."
+                  className="w-full bg-white/5 border border-white/10 rounded-xl py-2 px-4 text-sm text-slate-200 outline-none focus:border-indigo-500 transition-all"
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearchUsers()}
+                />
+              </div>
+              <Button onClick={handleSearchUsers} loading={isSearching} className="py-2">Search</Button>
+            </div>
+
+            {searchResults.length > 0 ? (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 p-3 bg-indigo-500/5 border border-indigo-500/10 rounded-xl">
+                  <span className="text-xs font-bold text-slate-400">Assign Role:</span>
+                  <select
+                    value={selectedRole}
+                    onChange={(e) => setSelectedRole(e.target.value)}
+                    className="bg-transparent text-xs font-bold text-indigo-400 outline-none cursor-pointer"
+                  >
+                    <option value="USER">Member</option>
+                    <option value="ADMIN">Admin</option>
+                  </select>
+                </div>
+                <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
+                  {searchResults.map((user) => {
+                    const isAlreadyMember = currentProject.members?.some((m: any) => m.userId === user.id);
+                    return (
+                      <div key={user.id} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-400 uppercase">
+                            {user.username[0]}
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-white">{user.username}</p>
+                            <p className="text-[10px] text-slate-500">{user.email}</p>
+                          </div>
+                        </div>
+                        {isAlreadyMember ? (
+                          <span className="text-[10px] font-bold text-slate-500 uppercase px-2 py-1 bg-slate-800 rounded-md">Member</span>
+                        ) : (
+                          <Button onClick={() => handleAddMember(user.id)} size="sm" variant="primary">Add</Button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : hasSearched && (
+              <div className="p-8 text-center rounded-xl bg-white/[0.02] border border-dashed border-white/10">
+                <p className="text-sm text-slate-400">No users found matching <span className="text-white font-semibold">"{searchQuery}"</span></p>
+                <p className="text-[10px] text-slate-500 mt-1">Make sure the username or email is correct.</p>
+              </div>
+            )}
+          </div>
+        </div>
       </Modal>
     </Layout>
   );

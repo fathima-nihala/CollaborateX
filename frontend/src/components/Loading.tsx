@@ -1,4 +1,3 @@
-// src/components/Loading.tsx
 import React from 'react';
 
 interface LoadingProps {

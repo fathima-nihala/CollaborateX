@@ -1,4 +1,3 @@
-// src/components/Form.tsx
 import React from 'react';
 import type { UseFormRegisterReturn, FieldError } from 'react-hook-form';
 

@@ -1,4 +1,3 @@
-// src/app.ts
 import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -11,6 +10,7 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import authRoutes from './routes/auth.routes';
 import projectRoutes from './routes/project.routes';
 import taskRoutes from './routes/task.routes';
+import userRoutes from './routes/user.routes';
 
 const app: Express = express();
 
@@ -56,6 +56,7 @@ app.get('/api/health', (req: Request, res: Response) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/projects/:projectId/tasks', taskRoutes);
+app.use('/api/users', userRoutes);
 
 // 404 Handler
 app.use(notFoundHandler);

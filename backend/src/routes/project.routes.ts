@@ -1,4 +1,3 @@
-// src/routes/project.routes.ts
 import { Router } from 'express';
 import asyncHandler from '../middleware/asyncHandler';
 import { validateBody } from '../middleware/validation';

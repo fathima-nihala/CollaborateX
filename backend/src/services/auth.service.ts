@@ -1,4 +1,3 @@
-// src/services/auth.service.ts
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { PrismaClient, User } from '@prisma/client';
@@ -170,6 +169,20 @@ export class AuthService {
     });
 
     return { accessToken, refreshToken };
+  }
+
+  async findUsers(query: string): Promise<UserWithoutPassword[]> {
+    const users = await prisma.user.findMany({
+      where: {
+        OR: [
+          { username: { contains: query, mode: 'insensitive' } },
+          { email: { contains: query, mode: 'insensitive' } },
+        ],
+      },
+      take: 10,
+    });
+
+    return users.map((user) => this.formatUserResponse(user));
   }
 
   private formatUserResponse(user: User): UserWithoutPassword {

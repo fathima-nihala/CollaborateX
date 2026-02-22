@@ -1,4 +1,3 @@
-// src/types/index.ts
 export interface JwtPayload {
   id: string;
   email: string;

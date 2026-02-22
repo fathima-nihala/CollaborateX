@@ -1,4 +1,3 @@
-// src/services/project.service.ts
 import { PrismaClient } from '@prisma/client';
 import { NotFoundError, AuthorizationError, ConflictError } from '../utils/errors';
 import { PaginationParams, UserRole } from '../types';

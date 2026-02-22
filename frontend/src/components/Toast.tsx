@@ -1,4 +1,3 @@
-// src/components/Toast.tsx
 import React, { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { removeToast } from '../store/slices/uiSlice';

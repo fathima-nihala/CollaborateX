@@ -1,4 +1,3 @@
-// src/store/slices/authSlice.ts
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 import type { AxiosError } from 'axios';
 import apiClient from '../../api/client';
@@ -61,11 +60,11 @@ export const login = createAsyncThunk(
     try {
       const response = await apiClient.login(email, password);
       const { user, tokens } = response.data.data;
-      
+
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('accessToken', tokens.accessToken);
       localStorage.setItem('refreshToken', tokens.refreshToken);
-      
+
       return { user, tokens };
     } catch (error: unknown) {
       return rejectWithValue(getErrorMessage(error));
@@ -81,12 +80,24 @@ export const logout = createAsyncThunk(
       if (state.auth.refreshToken) {
         await apiClient.logout(state.auth.refreshToken);
       }
-      
+
       localStorage.removeItem('user');
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
-      
+
       return null;
+    } catch (error: unknown) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  }
+);
+
+export const searchUsers = createAsyncThunk(
+  'auth/searchUsers',
+  async (query: string, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.searchUsers(query);
+      return response.data.data;
     } catch (error: unknown) {
       return rejectWithValue(getErrorMessage(error));
     }

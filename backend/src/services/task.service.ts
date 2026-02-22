@@ -1,4 +1,3 @@
-// src/services/task.service.ts
 import { PrismaClient, TaskStatus } from '@prisma/client';
 import { NotFoundError, AuthorizationError } from '../utils/errors';
 import { PaginationParams, TaskPriority } from '../types';
@@ -26,8 +25,8 @@ export class TaskService {
       },
     });
 
-    if (!projectMember) {
-      throw new AuthorizationError('You are not a member of this project');
+    if (!projectMember || projectMember.role !== 'ADMIN') {
+      throw new AuthorizationError('Only project admins can create tasks');
     }
 
     const task = await prisma.task.create({
@@ -111,6 +110,11 @@ export class TaskService {
       throw new AuthorizationError('You do not have access to this task');
     }
 
+    // If not admin, verify task is assigned to this user
+    if (projectMember.role !== 'ADMIN' && task.assignedToId !== userId) {
+      throw new AuthorizationError('You can only access tasks assigned to you');
+    }
+
     return task;
   }
 
@@ -141,11 +145,18 @@ export class TaskService {
       throw new AuthorizationError('You are not a member of this project');
     }
 
+    const isAdmin = projectMember.role === 'ADMIN';
+
     const skip = (page - 1) * limit;
 
     const whereClause: any = {
       projectId,
     };
+
+    // If not admin, only show tasks assigned to the user
+    if (!isAdmin) {
+      whereClause.assignedToId = userId;
+    }
 
     if (filters?.status) {
       whereClause.status = filters.status;

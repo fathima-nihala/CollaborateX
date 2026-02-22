@@ -1,4 +1,3 @@
-// src/store/slices/uiSlice.ts
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
