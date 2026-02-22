@@ -1,7 +1,18 @@
 // src/middleware/validation.ts
-import { Request, Response, NextFunction } from 'express';
-import { ZodSchema } from 'zod';
+import type { Request, Response, NextFunction } from 'express';
+import { ZodSchema, ZodError } from 'zod';
 import { ValidationError } from '../utils/errors';
+
+const extractZodErrors = (error: ZodError): Record<string, string> => {
+  const errors: Record<string, string> = {};
+  // Zod v4 uses .issues, Zod v3 uses .errors — support both
+  const issues = error.issues ?? (error as any).errors ?? [];
+  issues.forEach((issue: any) => {
+    const path = issue.path?.join('.') || 'value';
+    errors[path] = issue.message;
+  });
+  return errors;
+};
 
 export const validateRequest = (schema: ZodSchema) => {
   return (req: Request, res: Response, next: NextFunction) => {
@@ -18,14 +29,9 @@ export const validateRequest = (schema: ZodSchema) => {
       req.query = validated.query || req.query;
 
       next();
-    } catch (error: any) {
-      if (error.errors) {
-        const errors: Record<string, string> = {};
-        error.errors.forEach((err: any) => {
-          const path = err.path.join('.');
-          errors[path] = err.message;
-        });
-        next(new ValidationError(errors));
+    } catch (error: unknown) {
+      if (error instanceof ZodError) {
+        next(new ValidationError(extractZodErrors(error)));
       } else {
         next(error);
       }
@@ -39,14 +45,9 @@ export const validateBody = (schema: ZodSchema) => {
       const validated = schema.parse(req.body);
       req.body = validated;
       next();
-    } catch (error: any) {
-      if (error.errors) {
-        const errors: Record<string, string> = {};
-        error.errors.forEach((err: any) => {
-          const path = err.path.join('.');
-          errors[path] = err.message;
-        });
-        next(new ValidationError(errors));
+    } catch (error: unknown) {
+      if (error instanceof ZodError) {
+        next(new ValidationError(extractZodErrors(error)));
       } else {
         next(error);
       }
@@ -60,14 +61,9 @@ export const validateQuery = (schema: ZodSchema) => {
       const validated = schema.parse(req.query);
       req.query = validated;
       next();
-    } catch (error: any) {
-      if (error.errors) {
-        const errors: Record<string, string> = {};
-        error.errors.forEach((err: any) => {
-          const path = err.path.join('.');
-          errors[path] = err.message;
-        });
-        next(new ValidationError(errors));
+    } catch (error: unknown) {
+      if (error instanceof ZodError) {
+        next(new ValidationError(extractZodErrors(error)));
       } else {
         next(error);
       }

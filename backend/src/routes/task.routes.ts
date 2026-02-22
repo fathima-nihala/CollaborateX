@@ -1,9 +1,10 @@
 // src/routes/task.routes.ts
 import { Router } from 'express';
-import taskController from '../controllers/task.controller';
+import asyncHandler from '../middleware/asyncHandler';
 import { validateBody } from '../middleware/validation';
 import { CreateTaskSchema, UpdateTaskSchema } from '../schemas/validation';
 import { authenticateToken } from '../middleware/auth';
+import * as taskController from '../controllers/task.controller';
 
 const router = Router({ mergeParams: true });
 
@@ -11,10 +12,10 @@ const router = Router({ mergeParams: true });
 router.use(authenticateToken);
 
 // Task CRUD
-router.post('/', validateBody(CreateTaskSchema), taskController.createTask.bind(taskController));
-router.get('/', taskController.getProjectTasks.bind(taskController));
-router.get('/:taskId', taskController.getTask.bind(taskController));
-router.put('/:taskId', validateBody(UpdateTaskSchema), taskController.updateTask.bind(taskController));
-router.delete('/:taskId', taskController.deleteTask.bind(taskController));
+router.post('/', validateBody(CreateTaskSchema), asyncHandler(taskController.createTask));
+router.get('/', asyncHandler(taskController.getProjectTasks));
+router.get('/:taskId', asyncHandler(taskController.getTask));
+router.put('/:taskId', validateBody(UpdateTaskSchema), asyncHandler(taskController.updateTask));
+router.delete('/:taskId', asyncHandler(taskController.deleteTask));
 
 export default router;

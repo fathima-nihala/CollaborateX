@@ -138,13 +138,18 @@ export class AuthService {
     }
   }
 
-  async logout(userId: string, refreshToken: string): Promise<void> {
-    await prisma.refreshToken.deleteMany({
-      where: {
-        userId,
-        token: refreshToken,
-      },
-    });
+  async logout(userId: string, refreshToken?: string): Promise<void> {
+    if (refreshToken) {
+      // Delete only the specific session
+      await prisma.refreshToken.deleteMany({
+        where: { userId, token: refreshToken },
+      });
+    } else {
+      // No token provided — clear all sessions for this user
+      await prisma.refreshToken.deleteMany({
+        where: { userId },
+      });
+    }
 
     logger.info('User logged out successfully', { userId });
   }
@@ -157,11 +162,11 @@ export class AuthService {
     };
 
     const accessToken = jwt.sign(payload, this.jwtSecret, {
-      expiresIn: this.jwtExpiry,
+      expiresIn: this.jwtExpiry as any,
     });
 
     const refreshToken = jwt.sign(payload, this.jwtRefreshSecret, {
-      expiresIn: this.jwtRefreshExpiry,
+      expiresIn: this.jwtRefreshExpiry as any,
     });
 
     return { accessToken, refreshToken };

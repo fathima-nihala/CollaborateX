@@ -1,17 +1,39 @@
 // src/middleware/errorHandler.ts
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
+import { ZodError } from 'zod';
 import { AppError } from '../utils/errors';
+import { ValidationError } from '../utils/errors';
 import logger from '../utils/logger';
-import { ApiResponse } from '../types';
+import type { ApiResponse } from '../types';
 
 export const errorHandler = (
-  error: Error | AppError,
+  error: Error,
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) => {
   const isDevelopment = process.env.NODE_ENV === 'development';
 
+  // Handle ZodError (in case it escapes validation middleware)
+  if (error instanceof ZodError) {
+    const errors: Record<string, string> = {};
+    const issues = error.issues ?? (error as any).errors ?? [];
+    issues.forEach((issue: any) => {
+      const path = issue.path?.join('.') || 'value';
+      errors[path] = issue.message;
+    });
+
+    const response: ApiResponse = {
+      success: false,
+      message: 'Validation failed',
+      errors,
+    };
+
+    if (isDevelopment) response.stack = error.stack;
+    return res.status(400).json(response);
+  }
+
+  // Handle known AppError (ValidationError, NotFoundError, etc.)
   if (error instanceof AppError) {
     logger.warn('Application error', {
       statusCode: error.statusCode,
@@ -26,10 +48,7 @@ export const errorHandler = (
       errors: error.errors,
     };
 
-    if (isDevelopment) {
-      response.stack = error.stack;
-    }
-
+    if (isDevelopment) response.stack = error.stack;
     return res.status(error.statusCode || 500).json(response);
   }
 
@@ -46,14 +65,11 @@ export const errorHandler = (
     message: 'An unexpected error occurred',
   };
 
-  if (isDevelopment) {
-    response.stack = error.stack;
-  }
-
+  if (isDevelopment) response.stack = error.stack;
   res.status(500).json(response);
 };
 
-export const notFoundHandler = (req: Request, res: Response, next: NextFunction) => {
+export const notFoundHandler = (req: Request, res: Response, _next: NextFunction) => {
   const response: ApiResponse = {
     success: false,
     message: `Route ${req.path} not found`,

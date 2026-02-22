@@ -1,9 +1,10 @@
 // src/routes/project.routes.ts
 import { Router } from 'express';
-import projectController from '../controllers/project.controller';
+import asyncHandler from '../middleware/asyncHandler';
 import { validateBody } from '../middleware/validation';
 import { CreateProjectSchema, UpdateProjectSchema, AddProjectMemberSchema } from '../schemas/validation';
 import { authenticateToken } from '../middleware/auth';
+import * as projectController from '../controllers/project.controller';
 
 const router = Router();
 
@@ -11,14 +12,14 @@ const router = Router();
 router.use(authenticateToken);
 
 // Project CRUD
-router.post('/', validateBody(CreateProjectSchema), projectController.createProject.bind(projectController));
-router.get('/', projectController.getUserProjects.bind(projectController));
-router.get('/:id', projectController.getProject.bind(projectController));
-router.put('/:id', validateBody(UpdateProjectSchema), projectController.updateProject.bind(projectController));
-router.delete('/:id', projectController.deleteProject.bind(projectController));
+router.post('/', validateBody(CreateProjectSchema), asyncHandler(projectController.createProject));
+router.get('/', asyncHandler(projectController.getUserProjects));
+router.get('/:id', asyncHandler(projectController.getProject));
+router.put('/:id', validateBody(UpdateProjectSchema), asyncHandler(projectController.updateProject));
+router.delete('/:id', asyncHandler(projectController.deleteProject));
 
 // Project membership
-router.post('/:projectId/members', validateBody(AddProjectMemberSchema), projectController.addMember.bind(projectController));
-router.delete('/:projectId/members/:memberId', projectController.removeMember.bind(projectController));
+router.post('/:projectId/members', validateBody(AddProjectMemberSchema), asyncHandler(projectController.addMember));
+router.delete('/:projectId/members/:memberId', asyncHandler(projectController.removeMember));
 
 export default router;

@@ -1,125 +1,105 @@
 // src/controllers/task.controller.ts
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import taskService from '../services/task.service';
-import { CreateTaskInput, UpdateTaskInput, PaginationParams, TaskFilterSchema } from '../schemas/validation';
-import { ApiResponse } from '../types';
+import type { CreateTaskInput, UpdateTaskInput, PaginationParams } from '../schemas/validation';
+import type { ApiResponse } from '../types';
 
-export class TaskController {
-  async createTask(req: Request, res: Response, next: NextFunction) {
-    try {
-      if (!req.user) {
-        return res.status(401).json({ success: false, message: 'Not authenticated' });
-      }
-
-      const { projectId } = req.params;
-      const data = req.body as CreateTaskInput;
-      const task = await taskService.createTask(projectId, req.user.id, data);
-
-      const response: ApiResponse = {
-        success: true,
-        message: 'Task created successfully',
-        data: task,
-      };
-
-      res.status(201).json(response);
-    } catch (error) {
-      next(error);
-    }
+export const createTask = async (req: Request, res: Response) => {
+  if (!req.user) {
+    res.status(401).json({ success: false, message: 'Not authenticated' });
+    return;
   }
 
-  async getTask(req: Request, res: Response, next: NextFunction) {
-    try {
-      if (!req.user) {
-        return res.status(401).json({ success: false, message: 'Not authenticated' });
-      }
+  const { projectId } = req.params;
+  const data = req.body as CreateTaskInput;
+  const task = await taskService.createTask(projectId, req.user.id, data);
 
-      const { taskId } = req.params;
-      const task = await taskService.getTaskById(taskId, req.user.id);
+  const response: ApiResponse = {
+    success: true,
+    message: 'Task created successfully',
+    data: task,
+  };
 
-      const response: ApiResponse = {
-        success: true,
-        message: 'Task retrieved successfully',
-        data: task,
-      };
+  res.status(201).json(response);
+};
 
-      res.status(200).json(response);
-    } catch (error) {
-      next(error);
-    }
+export const getTask = async (req: Request, res: Response) => {
+  if (!req.user) {
+    res.status(401).json({ success: false, message: 'Not authenticated' });
+    return;
   }
 
-  async getProjectTasks(req: Request, res: Response, next: NextFunction) {
-    try {
-      if (!req.user) {
-        return res.status(401).json({ success: false, message: 'Not authenticated' });
-      }
+  const { taskId } = req.params;
+  const task = await taskService.getTaskById(taskId, req.user.id);
 
-      const { projectId } = req.params;
-      const pagination = req.query as unknown as PaginationParams;
-      
-      // Extract filter parameters
-      const filters = {
-        status: (req.query.status as any) || undefined,
-        priority: (req.query.priority as any) || undefined,
-        assignedToId: (req.query.assignedToId as string) || undefined,
-      };
+  const response: ApiResponse = {
+    success: true,
+    message: 'Task retrieved successfully',
+    data: task,
+  };
 
-      const result = await taskService.getProjectTasks(projectId, req.user.id, pagination, filters);
+  res.status(200).json(response);
+};
 
-      const response: ApiResponse = {
-        success: true,
-        message: 'Tasks retrieved successfully',
-        data: result.data,
-        ...{ pageInfo: result.pageInfo },
-      };
-
-      res.status(200).json(response);
-    } catch (error) {
-      next(error);
-    }
+export const getProjectTasks = async (req: Request, res: Response) => {
+  if (!req.user) {
+    res.status(401).json({ success: false, message: 'Not authenticated' });
+    return;
   }
 
-  async updateTask(req: Request, res: Response, next: NextFunction) {
-    try {
-      if (!req.user) {
-        return res.status(401).json({ success: false, message: 'Not authenticated' });
-      }
+  const { projectId } = req.params;
+  const pagination = req.query as unknown as PaginationParams;
 
-      const { taskId } = req.params;
-      const data = req.body as UpdateTaskInput;
-      const task = await taskService.updateTask(taskId, req.user.id, data);
+  const filters = {
+    status: (req.query.status as any) || undefined,
+    priority: (req.query.priority as any) || undefined,
+    assignedToId: (req.query.assignedToId as string) || undefined,
+  };
 
-      const response: ApiResponse = {
-        success: true,
-        message: 'Task updated successfully',
-        data: task,
-      };
+  const result = await taskService.getProjectTasks(projectId, req.user.id, pagination, filters);
 
-      res.status(200).json(response);
-    } catch (error) {
-      next(error);
-    }
+  const response: ApiResponse = {
+    success: true,
+    message: 'Tasks retrieved successfully',
+    data: result.data,
+    ...{ pageInfo: result.pageInfo },
+  };
+
+  res.status(200).json(response);
+};
+
+export const updateTask = async (req: Request, res: Response) => {
+  if (!req.user) {
+    res.status(401).json({ success: false, message: 'Not authenticated' });
+    return;
   }
 
-  async deleteTask(req: Request, res: Response, next: NextFunction) {
-    try {
-      if (!req.user) {
-        return res.status(401).json({ success: false, message: 'Not authenticated' });
-      }
+  const { taskId } = req.params;
+  const data = req.body as UpdateTaskInput;
+  const task = await taskService.updateTask(taskId, req.user.id, data);
 
-      const { taskId } = req.params;
-      await taskService.deleteTask(taskId, req.user.id);
+  const response: ApiResponse = {
+    success: true,
+    message: 'Task updated successfully',
+    data: task,
+  };
 
-      const response: ApiResponse = {
-        success: true,
-        message: 'Task deleted successfully',
-      };
+  res.status(200).json(response);
+};
 
-      res.status(200).json(response);
-    } catch (error) {
-      next(error);
-    }
+export const deleteTask = async (req: Request, res: Response) => {
+  if (!req.user) {
+    res.status(401).json({ success: false, message: 'Not authenticated' });
+    return;
   }
-}
 
-export default new TaskController();
+  const { taskId } = req.params;
+  await taskService.deleteTask(taskId, req.user.id);
+
+  const response: ApiResponse = {
+    success: true,
+    message: 'Task deleted successfully',
+  };
+
+  res.status(200).json(response);
+};
