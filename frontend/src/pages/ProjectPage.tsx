@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
-import { fetchProject, deleteProject, addProjectMember } from '../store/slices/projectSlice';
+import { fetchProject, deleteProject, addProjectMember, removeProjectMember } from '../store/slices/projectSlice';
 import { fetchTasks } from '../store/slices/taskSlice';
 import { addToast } from '../store/slices/uiSlice';
 import { searchUsers } from '../store/slices/authSlice';
@@ -125,6 +125,20 @@ export const ProjectPage: React.FC = () => {
         setSearchResults([]);
       } else {
         dispatch(addToast({ message: 'Failed to add member', type: 'error' }));
+      }
+    } catch (err) {
+      dispatch(addToast({ message: 'An unexpected error occurred', type: 'error' }));
+    }
+  };
+
+  const handleRemoveMember = async (memberId: string) => {
+    if (!projectId) return;
+    try {
+      const result = await dispatch(removeProjectMember({ projectId, memberId }));
+      if (removeProjectMember.fulfilled.match(result)) {
+        dispatch(addToast({ message: 'Member removed successfully', type: 'success' }));
+      } else {
+        dispatch(addToast({ message: 'Failed to remove member', type: 'error' }));
       }
     } catch (err) {
       dispatch(addToast({ message: 'An unexpected error occurred', type: 'error' }));
@@ -299,6 +313,16 @@ export const ProjectPage: React.FC = () => {
                       <p className="text-[10px] text-slate-500">{member.role}</p>
                     </div>
                   </div>
+                  {isAdmin && member.userId !== user?.id && (
+                    <Button
+                      onClick={() => handleRemoveMember(member.userId)}
+                      variant="danger"
+                      size="sm"
+                      className="py-1 px-3 text-[10px]"
+                    >
+                      Remove
+                    </Button>
+                  )}
                 </div>
               ))}
             </div>

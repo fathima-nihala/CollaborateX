@@ -112,6 +112,21 @@ export const addProjectMember = createAsyncThunk(
   }
 );
 
+export const removeProjectMember = createAsyncThunk(
+  'projects/removeMember',
+  async (
+    { projectId, memberId }: { projectId: string; memberId: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      await apiClient.removeProjectMember(projectId, memberId);
+      return memberId;
+    } catch (error: unknown) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  }
+);
+
 const projectSlice = createSlice({
   name: 'projects',
   initialState,
@@ -223,6 +238,25 @@ const projectSlice = createSlice({
         }
       })
       .addCase(addProjectMember.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      });
+
+    // Remove Member
+    builder
+      .addCase(removeProjectMember.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(removeProjectMember.fulfilled, (state, action) => {
+        state.isLoading = false;
+        if (state.currentProject && state.currentProject.id === action.meta.arg.projectId) {
+          state.currentProject.members = state.currentProject.members.filter(
+            (m: any) => m.userId !== action.payload
+          );
+        }
+      })
+      .addCase(removeProjectMember.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       });

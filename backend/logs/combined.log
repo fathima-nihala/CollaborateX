@@ -348,3 +348,32 @@
 {"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g 304 - - 675.882 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:32:21"}
 {"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g/tasks?page=1&limit=10 200 784 - 678.856 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:32:21"}
 {"environment":"development","level":"info","message":"Server running on port 5000","service":"collaboratex-backend","timestamp":"2026-02-22 15:32:41"}
+{"environment":"development","level":"info","message":"Server running on port 5000","service":"collaboratex-backend","timestamp":"2026-02-22 15:32:43"}
+{"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g 304 - - 2987.712 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:34:18"}
+{"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g/tasks?page=1&limit=10 304 - - 3356.254 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:34:18"}
+{"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g/tasks?page=1&limit=10 304 - - 3755.282 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:34:19"}
+{"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g 304 - - 4057.490 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:34:19"}
+{"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g 304 - - 887.412 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:36:10"}
+{"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g 304 - - 890.878 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:36:10"}
+{"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g/tasks?page=1&limit=10 304 - - 1401.344 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:36:10"}
+{"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g/tasks?page=1&limit=10 304 - - 2132.500 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:36:11"}
+{"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g 304 - - 665.215 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:36:15"}
+{"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g 304 - - 721.716 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:36:15"}
+{"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g/tasks?page=1&limit=10 304 - - 872.645 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:36:16"}
+{"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g/tasks?page=1&limit=10 304 - - 1191.665 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:36:16"}
+{"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g/tasks?page=1&limit=10 304 - - 649.301 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:36:20"}
+{"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g/tasks?page=1&limit=10 304 - - 674.767 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:36:20"}
+{"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g 304 - - 676.868 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:36:20"}
+{"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g 304 - - 693.850 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:36:20"}
+{"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g 304 - - 1089.279 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:36:27"}
+{"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g 304 - - 1163.014 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:36:27"}
+{"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g/tasks?page=1&limit=10 304 - - 1246.694 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:36:27"}
+{"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g/tasks?page=1&limit=10 304 - - 1665.388 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:36:27"}
+{"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g/tasks?page=1&limit=10 304 - - 675.600 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:36:36"}
+{"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g 304 - - 688.335 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:36:36"}
+{"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g 304 - - 718.026 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:36:37"}
+{"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g/tasks?page=1&limit=10 304 - - 718.534 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:36:37"}
+{"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g/tasks?page=1&limit=10 304 - - 658.746 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:36:37"}
+{"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g 304 - - 673.701 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:36:37"}
+{"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g/tasks?page=1&limit=10 304 - - 707.475 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:36:37"}
+{"level":"info","message":"GET /api/projects/cmlximqfw0002ra5s2kda5o6g 304 - - 759.776 ms","service":"collaboratex-backend","timestamp":"2026-02-22 15:36:37"}
